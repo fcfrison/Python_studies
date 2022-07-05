@@ -1,3 +1,7 @@
+'''
+Working with one process.
+'''
+
 import multiprocessing
 
 print(f'Starting process.... process name: {multiprocessing.current_process().name}')
