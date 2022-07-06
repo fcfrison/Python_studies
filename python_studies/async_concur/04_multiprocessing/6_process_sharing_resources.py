@@ -1,6 +1,9 @@
 '''
 Sometimes we wish that multiple processes share resources. The package 
 multiprocessing has some tools that help to accomplish this goal.
+
+Code related to the course "rogramação Concorrente e Assíncrona com Python". 
+Available at https://www.udemy.com/course/programacao-concorrente-e-assincrona-com-python/
 '''
 import ctypes
 import multiprocessing
