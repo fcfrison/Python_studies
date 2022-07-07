@@ -1,5 +1,5 @@
 '''
-Sometimes shared resources can become problematic. The bellow code presents 
+Sometimes shared resources can become problematic. The code bellow presents 
 a solution to problems that existed in the file 8_process_sync....
 Similarly to the threads case, a lock must be created.
 

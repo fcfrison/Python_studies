@@ -1,5 +1,5 @@
 '''
-Sometimes shared resources can become problematic. The bellow code presents 
+Sometimes shared resources can become problematic. The code below presents 
 problems that can occur.
 
 Code related to the course "rogramação Concorrente e Assíncrona com Python". 

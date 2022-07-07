@@ -2,7 +2,7 @@
 Creating a simple process algorithm without using 
 process abstraction methods. 
 
-Code related to the course "rogramação Concorrente e Assíncrona com Python". 
+Code related to the course "Programação Concorrente e Assíncrona com Python". 
 Available at https://www.udemy.com/course/programacao-concorrente-e-assincrona-com-python/
 '''
 import multiprocessing

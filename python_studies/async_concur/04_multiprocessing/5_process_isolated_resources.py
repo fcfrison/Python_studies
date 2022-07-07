@@ -1,6 +1,6 @@
 """
 By default Python processes don't share resources. They are kind of
-isolated from each other. The bellow code tries to show this isolation.
+isolated from each other. The below code tries to show this isolation.
 
 Code related to the course "rogramação Concorrente e Assíncrona com Python". 
 Available at https://www.udemy.com/course/programacao-concorrente-e-assincrona-com-python/
