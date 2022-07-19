@@ -1,5 +1,5 @@
 '''
-It's possible also to cancel a task (for instance, if it take 
+It's possible also to cancel a task (for instance, if it takes 
 too long to complete).
 '''
 import asyncio
@@ -16,7 +16,7 @@ async def main():
         await asyncio.sleep(1) # here is the point where the task starts to run.
                                 # it's also in this point that the CancelledError is raised.
         seconds_elapsed +=  1
-        if seconds_elapsed == 5:
+        if seconds_elapsed == 5: # timeout manual control
             long_task.cancel() 
     try:
         await long_task
