@@ -1,5 +1,5 @@
 '''
-In the code below, follows the basics of the HTTP method 'POST' in Fast API.
+In the code below, follows the basics of the HTTP method 'PUT' in Fast API.
 
 
 Code related to the course "FastAPI - APIs Modernas e Assíncronas com Python". 
@@ -53,6 +53,10 @@ async def get_course(id:int)->dict: # it's very import to use type hints,
 @app.post("/courses",status_code=status.HTTP_201_CREATED)
 async def post_course(course:Course): 
     '''
+    Coroutine that insert new data in the database.
+    '''
+
+    '''
     Given that fastAPI relies on Pydantic, it's not necessary
     to manually create an instance of the class Course. In other
     words, considering that a json file was sent to the API, 
@@ -63,7 +67,20 @@ async def post_course(course:Course):
     courses[next_id] = course
     return course
 
+@app.put('/courses/{course_id}', status_code=status.HTTP_202_ACCEPTED)
+async def put_course(course_id:int, course:Course):
+    '''
+    Coroutine that update existing data in the database.
+    '''
+    if (course_id in courses):
+        del course.id
+        courses[course_id] = course
+        return course
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Course not found in the database.")
+
 if __name__=="__main__":
     import uvicorn
-    uvicorn.run("main_lecture_14:app", host="localhost", # uvicorn is a server for assynchronous processing
+    uvicorn.run("main_lecture_15:app", host="localhost", # uvicorn is a server for assynchronous processing
                 port=8800, log_level="info", reload=True)
