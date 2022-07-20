@@ -1,5 +1,5 @@
 '''
-It's possible to create a echo socket server using asyncio.
+It's possible to create an echo socket server using asyncio.
 
 The code below was created by Matthew Fowler in the book 'Python 
 Concurrency with asyncio-Manning Publications (2022)'. 
@@ -32,7 +32,7 @@ async def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create the server socket
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_address = ('127.0.0.1', 8000) # create the address
-    server_socket.setblocking(False) # turning methods (like accept() and recv) that by default are blocking into non-blocking
+    server_socket.setblocking(False) # turning methods like accept() and recv() - that by default are blocking - into non-blocking
     server_socket.bind(server_address)
     server_socket.listen() # server socket starts to listen
     await listen_for_connection(server_socket, asyncio.get_event_loop())
