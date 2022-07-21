@@ -32,7 +32,7 @@ class MyContext:
         Método especial que permite que se entre no context manager.
         '''
         print("Entrando no context ...")
-        self.obj = 'the return object'
+        self.obj = 'the returned object'
         return self.obj
     def __exit__(self, exec_type, exc_value, exc_tb):
         '''

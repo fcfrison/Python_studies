@@ -16,7 +16,7 @@ async def echo(connection: socket,
     send data back to the clients.
     '''
     while (data := await loop.sock_recv(connection, 1024)): # if data is received from a client connection, 
-                                                            # then data is send back to the client
+                                                            # then data is sent back to the client
         await loop.sock_sendall(connection, data) 
 
 async def listen_for_connection(server_socket: socket, loop: AbstractEventLoop):
