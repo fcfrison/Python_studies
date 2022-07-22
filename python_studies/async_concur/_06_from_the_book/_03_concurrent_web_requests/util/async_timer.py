@@ -14,6 +14,8 @@ def async_timed():
             start = time.time()
             try:
                 return await func(*args, **kwargs)
+            #except Exception as e:
+            #    print(e.__repr__)
             finally:
                 end = time.time()
                 total = end - start
