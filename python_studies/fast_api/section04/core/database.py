@@ -14,5 +14,6 @@ Session: AsyncSession = sessionmaker( # 'Session' is the constructor of a sessio
     autocommit=False, # commits are manual
     autoflush=False, 
     expire_on_commit=False, # session stays open after a commit
+    class_ = AsyncSession,
     bind=engine
 )
