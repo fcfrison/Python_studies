@@ -1,5 +1,5 @@
 '''
-It's possible to use wait instead of as_completed and gather. It has 
+It's possible to use 'wait' instead of 'as_completed' and 'gather'. It has 
 the upper hand over both.   
 
 The code below was created by Matthew Fowler in the book 'Python 

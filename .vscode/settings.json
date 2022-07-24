@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./python_studies/async_concur/_06_from_the_book/_04_concurrent_db"
+    ]
+}

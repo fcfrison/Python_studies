@@ -9,7 +9,7 @@ from sqlalchemy import Column, Integer, String
 class CourseModel(settings_.DBBaseModel):
     __tablename__ = 'courses'
 
-    id : int = Column(Integer, primary_key=True,autoincrement=True)
+    id_ : int = Column(Integer, primary_key=True,autoincrement=True)
     title : str = Column(String(100))
-    lectures : str = Column(Integer)
+    lectures : int = Column(Integer)
     total_hours : int = Column(Integer)
