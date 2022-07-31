@@ -21,12 +21,14 @@ from chapter_04 import fetch_status_w_delay
 async def main():
     async with ClientSession() as session:
         fetchers = [ # creating a list of coroutines. 
-            fetch_status_w_delay(session,'https://www.example.com', 1),
-            fetch_status_w_delay(session,'https://www.example.com', 2),
-            fetch_status_w_delay(session,'https://www.example.com', 10)
+            fetch_status_w_delay(session,'https://www.example.com', 6),
+            fetch_status_w_delay(session,'https://www.example.com', 9),
+            fetch_status_w_delay(session,'https://www.example.com', 15)
             ] 
         for finished_task in asyncio.as_completed(fetchers): # wrapping the coroutines in tasks
-            print(await finished_task)
+            print("print before task")
+            print(await finished_task)# starting the concurrent process 
+            print("print after task")
 
 asyncio.get_event_loop().run_until_complete(main())    
 

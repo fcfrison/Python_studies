@@ -1,2 +1,8 @@
 __pycache__/
 db_sensitive_information.py
+fast_api_venv/
+fastapi_venv_ubuntu/
+*.xlsx
+*.log
+secret_gen.py
+**/launch.json
