@@ -51,8 +51,11 @@ class EndpointBase(BaseModel):
                         df = pd.DataFrame(done_task.result().data)
                         endpoint_class.df_created = True # df was created.
                     else:
+                        df = df.append(pd.DataFrame(done_task.result().data))
+                        '''
                         df= pd.concat([df,pd.DataFrame(
                                 done_task.result().data)],ignore_index=True)
+                        '''
                     if(done_task.result().row_limit_exc): # if row limit exceeded, then create a new task
                         done_task.result().inner_control.offset+=1
                         pending.add(asyncio.create_task(fetch_result(
