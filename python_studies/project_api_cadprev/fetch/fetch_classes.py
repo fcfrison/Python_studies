@@ -10,7 +10,9 @@ from pydantic import BaseModel
 
 from .fetch_functions import fetch_result
 
-
+# suppress FutureWarning
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class EndpointBase(BaseModel):
     '''

@@ -3,6 +3,9 @@ import numpy as np
 
 from decimal import Decimal
 from datetime import datetime
+from collections import namedtuple
+import itertools
+
 from transform.rpps_aliquotas import (normalize_date,insert_expected_final_ente,
                        insert_expected_final_ente_suplem,
                        check_dt_differences)
@@ -36,15 +39,26 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
 
     unique_cnpj:np.ndarray = df_aliquota.nr_cnpj_entidade\
                                 .unique() 
-    
-    # inserting columns
-    fn = lambda arg: insert_expected_final_ente(df=df_aliquota,
-                        now=now,nr_cnpj_entidade=arg)
-    list(map(fn,unique_cnpj)) 
 
-    fn = lambda arg: insert_expected_final_ente_suplem(df=df_aliquota,
-                        now=now,nr_cnpj_entidade=arg)
-    list(map(fn,unique_cnpj)) # inserting columns
+    # creating a class with 'nr_cnpj_entidade' and 'no_sujeito_passivo' attributes.
+    CnpjNomeSujPass = namedtuple('CnpjNomeSujPass', 
+                        'nr_cnpj_entidade  no_sujeito_passivo')
+    
+    # creating lists of objects of the class CnpjNomeSujPass.
+    cnpj_nome_suj = [list(map(lambda arg: CnpjNomeSujPass(arg,nome_suj),
+                        unique_cnpj))
+                for nome_suj in ['Ente','Ente-suplementar']]
+    
+    # unpacking two lists into another.
+    cnpj_nome_suj_unpack = list(itertools.chain(*cnpj_nome_suj))
+
+    # inserting columns
+    fn = lambda arg: insert_expected_final_ente(
+                        df=df_aliquota,
+                        now=now,
+                        nr_cnpj_entidade=arg.nr_cnpj_entidade,
+                        no_sujeito_passivo=arg.no_sujeito_passivo)
+    list(map(fn,cnpj_nome_suj_unpack)) 
     
     # drop duplicates rows.
     df_aliquota.drop_duplicates(inplace=True, ignore_index=True) 
@@ -54,12 +68,14 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
                 keep=False)
     fn = lambda arg: "D" if arg else "ND" # D - duplicada; ND - ñ dupli.
     dupl_iter_ = list(map(fn,dupl_iter))
-    # insert the column 'duplicada_n_continua'
+    # insert the column 'dt_inicio_vigencia_duplicada'
     df_aliquota= df_aliquota.assign(dt_inicio_vigencia_duplicada=dupl_iter_) 
 
     # inserting column 'dts_finais_diferentes'
-    fn = lambda arg: check_dt_differences(df=df_aliquota, nr_cnpj_entidade=arg)
-    list(map(fn,unique_cnpj)) 
+    fn = lambda arg: check_dt_differences(df=df_aliquota, 
+                                          nr_cnpj_entidade=arg.nr_cnpj_entidade,
+                                          no_sujeito_passivo=arg.no_sujeito_passivo)
+    list(map(fn,cnpj_nome_suj_unpack)) 
     
     return df_aliquota
 

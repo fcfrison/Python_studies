@@ -30,7 +30,8 @@ def normalize_date(date:str)->datetime.datetime:
 
 def insert_expected_final_ente(df:pd.DataFrame, 
                                now:datetime.datetime,
-                               nr_cnpj_entidade:str):
+                               nr_cnpj_entidade:str,
+                               no_sujeito_passivo:str):
     '''
     description
     ----------------
@@ -58,7 +59,7 @@ def insert_expected_final_ente(df:pd.DataFrame,
     
     # Query data from 'Ente'
     iterator = df.query(f"nr_cnpj_entidade == '{nr_cnpj_entidade}'" +
-                        f"& no_sujeito_passivo =='Ente'")\
+                        f"& no_sujeito_passivo =='{no_sujeito_passivo}'")\
                         [['dt_inicio_vigencia','dt_fim_vigencia','nr_cnpj_entidade']]\
                         .sort_values(ascending=True, by='dt_inicio_vigencia')
 
@@ -179,9 +180,11 @@ def insert_expected_final_ente_suplem(df:pd.DataFrame,
                         .loc[nm_tuple.Index] = \
                             nm_tuple.dt_fim_vigencia
 
-def check_dt_differences(df:pd.DataFrame, nr_cnpj_entidade:str)->None:
+def check_dt_differences(df:pd.DataFrame, 
+                         nr_cnpj_entidade:str,
+                         no_sujeito_passivo:str)->None:
     '''
-    description
+    Description
     ----------------
 
     This function inserts the field 'dts_finais_diferentes', whose 
@@ -190,7 +193,7 @@ def check_dt_differences(df:pd.DataFrame, nr_cnpj_entidade:str)->None:
     The field previously mentioned is restricted by the condition 
     no_sujeito_passivo == 'Ente'.
 
-    parameters
+    Parameters
     ----------------
         df:pd.DataFrame, 
         nr_cnpj_entidade:str
@@ -200,7 +203,7 @@ def check_dt_differences(df:pd.DataFrame, nr_cnpj_entidade:str)->None:
     except ValueError:
         pass
     iterator = df.query(f"nr_cnpj_entidade == '{nr_cnpj_entidade}' & "
-                                + "no_sujeito_passivo == 'Ente'").sort_values(
+                                + f"no_sujeito_passivo == '{no_sujeito_passivo}'").sort_values(
                                     ascending=True, by='dt_inicio_vigencia')[:-1]\
                                     .itertuples() 
     for nm_tuple in iterator:

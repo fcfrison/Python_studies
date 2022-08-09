@@ -30,9 +30,9 @@ async def main():
                                                 EndpointRppsAliquota)
         df_aliquota = aliquotas_rpps_transform(df_aliquota)
         
-        #df_DIPR.to_excel('./downloaded_data/DIPR_ajuricaba.xlsx')
-        #df_aliquota.to_excel('./downloaded_data/ALIQUOTAS.xlsx')
-        print(df_aliquota)
+        df_DIPR.to_pickle('./downloaded_data/DIPR_2021.pkl')
+        #df_aliquota.to_excel('./downloaded_data/df_aliquotas_new_1.xlsx')
+        print("FIM DO PROCESSAMENTO")
     
 
 asyncio.run(main())
