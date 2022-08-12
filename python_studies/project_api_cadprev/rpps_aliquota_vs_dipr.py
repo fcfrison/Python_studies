@@ -1,4 +1,9 @@
+from collections import namedtuple
 import pandas as pd
+
+# suppress FutureWarning
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
     '''
@@ -43,29 +48,116 @@ df_aliquotas:pd.DataFrame = pd.read_pickle('./downloaded_data/df_aliquota_transf
 # despite the fact that'vl_rubrica' is a monetary value, it'll treated as float.
 df_DIPR = df_DIPR.astype(dict(vl_rubrica='float128',
                               id_rubrica='str'))
-# creating table with 
+# creating table with new field
 df_DIPR_grouped = create_table_percent(df=df_DIPR)
 
 # insert the column 'dates'
-fn = lambda arg: pd.Period(f'{arg.dt_mes}-1-{arg.dt_ano}',freq='M')\
-    .end_time.date() # get the last day of the month
+fn = lambda arg: pd.to_datetime(pd.Period(f'{arg.dt_mes}-1-{arg.dt_ano}',freq='M')\
+    .end_time.date()) # get the last day of the month
 list_dates = list(map(fn,df_DIPR_grouped.itertuples()))
+# create column 'dates'
 df_DIPR_grouped = df_DIPR_grouped.assign(dates=list_dates)
 
+def get_aliquotas(df_aliquotas:pd.DataFrame,
+                  df_DIPR_grouped:pd.DataFrame,
+                  cnpj:str)->None:
+    
+    aliquotas_columns = ['vl_aliquota','datas_invertidas','dt_inicio_vigencia_duplicada',
+                         'dts_finais_diferentes'] # list of columns of interest   
+    new_columns_ente =  ['aliquota_ente','datas_invertidas_ente','dt_duplicada_ente',
+                        'problema_dt_final_ente'] # list of new columns
+    new_columns_ente_suplem =  ['aliquota_ente','datas_invertidas_ente','dt_duplicada_ente',
+                        'problema_dt_final_ente'] # list of new columns
+
+    dipr_iter = list(df_DIPR_grouped.query( # list of items in DIPR, given a cnpj
+                    f"nr_cnpj_entidade == '{cnpj}'").itertuples())
+
+    # df_aliquotas_ente is a table with data related to the category 'Ente'. 
+    df_aliquotas_ente = df_aliquotas.query(f"nr_cnpj_entidade == '{cnpj}' & "+
+                                            "no_sujeito_passivo == 'Ente'")
+    df_aliquotas_ente_supl = df_aliquotas.query(f"nr_cnpj_entidade == '{cnpj}' & "+
+                                            "no_sujeito_passivo == 'Ente-suplementar'")
+    for nm_tuple in dipr_iter:
+        # updating the DIPR table with new data. 
+        if(not df_aliquotas_ente.empty):
+            intervals_ente = find_time_interval(df_aliquotas_ente,nm_tuple)
+            df_DIPR_grouped.loc[nm_tuple.Index,new_columns_ente] = \
+                tuple(df_aliquotas_ente[intervals_ente][aliquotas_columns]\
+                    .iloc[0])
+        ############# Problemas ao implementar a df_aliquotas_ente_supl###########
+        ##########################################################################
+        if(not df_aliquotas_ente_supl.empty):
+            intervals_suplementar = find_time_interval(df_aliquotas_ente_supl,nm_tuple)
+            df_DIPR_grouped.loc[nm_tuple.Index,new_columns_ente_suplem] = \
+                tuple(df_aliquotas_ente_supl[intervals_suplementar][aliquotas_columns]\
+                    .iloc[0])
+
+def find_time_interval(df_aliquotas:pd.DataFrame,nm_tuple:namedtuple)->pd.Series:
+    '''
+    This function finds the intervals which a specific 'date' belongs to. 
+    The 'dates' comes from the table 'df_DIPR_grouped' and is related
+    to a transaction date.
+    
+    Parameters
+    ---------------------------
+        df_aliquotas: a DataFrame with data from the endpoint RPPS_ALIQUOTAS;
+        nm_tuple: an object with the attribute 'dates'. This information comes 
+                from the endpoint DIPR
+
+    Output
+    ---------------------------
+        An object from the type pd.Series with boolean values.
+    '''
+    return df_aliquotas.apply(lambda arg: True \
+        if (arg.dt_inicio_vigencia<=nm_tuple.dates and \
+            nm_tuple.dates<arg.dt_final_esperada) \
+                else False, axis=1)
+
+list(map(lambda cnpj: get_aliquotas(df_aliquotas,df_DIPR_grouped,cnpj),
+    df_DIPR_grouped.nr_cnpj_entidade.unique()))
+
+df_DIPR_grouped.to_excel("./downloaded_data/DIPR_grouped.xlsx")
 
 
-# -----------------------------------------------------------------------------------------
-df_DIPR_grouped['dates'] = pd.to_datetime(df_DIPR_grouped['dates']).dt.date
-df_aliquotas['dt_inicio_vigencia'] = pd.to_datetime(df_aliquotas['dt_inicio_vigencia']).dt.date
-df_aliquotas['dt_fim_vigencia'] = pd.to_datetime(df_aliquotas['dt_fim_vigencia']).dt.date
-#----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+#============================================================================
+'''
+dipr_iter = list(df_DIPR_grouped.query("nr_cnpj_entidade == '97320030000117'").itertuples())
+
 df_aliquotas_teste = df_aliquotas.query("nr_cnpj_entidade == '97320030000117' & "+
                    "no_sujeito_passivo == 'Ente'")
 
-dipr_iter = list(df_DIPR_grouped.query("nr_cnpj_entidade == '97320030000117'").itertuples())
-
 x = df_aliquotas_teste.apply(lambda arg: True if (arg.dt_inicio_vigencia<=dipr_iter[0].dates and \
     dipr_iter[0].dates<arg.dt_fim_vigencia) else False, axis=1)
-df_aliquotas_teste[x]
+
+df_DIPR_grouped.loc[
+    dipr_iter[0].Index,
+    ['aliquota_ente','datas_invertidas_ente','dt_duplicada_ente',
+        'problema_dt_final']] = tuple(df_aliquotas_teste[x][['vl_aliquota','datas_invertidas',
+                       'dt_inicio_vigencia_duplicada',
+                       'dts_finais_diferentes' ]].iloc[0])
+
+tuple(df_aliquotas_teste[x][['vl_aliquota','datas_invertidas',
+                       'dt_inicio_vigencia_duplicada',
+                       'dts_finais_diferentes' ]].iloc[0])
+
+df_DIPR_grouped.loc[
+    dipr_iter[0].Index,
+    ['aliquota_ente','datas_invertidas_ente','dt_duplicada_ente',
+        'problema_dt_final']] = 1,1,1,1
+df_DIPR_grouped.loc[3876]
+if(len(df_aliquotas_teste[x])>1):
+    df_aliquotas_teste[x].iloc[0]
 
 #geeksforgeeks.org/how-to-compare-two-columns-in-pandas/
+'''
