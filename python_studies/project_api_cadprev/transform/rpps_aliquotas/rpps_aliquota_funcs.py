@@ -203,10 +203,11 @@ def check_dt_differences(df:pd.DataFrame,
     except ValueError:
         pass
     iterator = df.query(f"nr_cnpj_entidade == '{nr_cnpj_entidade}' & "
-                                + f"no_sujeito_passivo == '{no_sujeito_passivo}'").sort_values(
-                                    ascending=True, by='dt_inicio_vigencia')[:-1]\
-                                    .itertuples() 
+                      + f"no_sujeito_passivo == '{no_sujeito_passivo}'").sort_values(
+                            ascending=True, by='dt_inicio_vigencia')[:-1]\
+                                .itertuples() 
     for nm_tuple in iterator:
-        if nm_tuple.dt_fim_vigencia.date() != \
-            nm_tuple.dt_final_esperada.date():
+        if (nm_tuple.dt_fim_vigencia.date() != 
+            nm_tuple.dt_final_esperada.date()):
+                
                 df['dts_finais_diferentes'].loc[nm_tuple.Index]="DFD"

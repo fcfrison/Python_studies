@@ -5,7 +5,7 @@ import pandas as pd
 from aiohttp import ClientSession
 from aiohttp import TCPConnector
 
-from fetch import *
+from extract import *
 from transform.transform_rpps_aliquotas import aliquotas_rpps_transform
 from transform.verify_uploaded_data import verify_uploaded_data
 from util import async_timed

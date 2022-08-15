@@ -2,7 +2,7 @@ import asyncio
 import logging
 from aiohttp import ClientSession
 from util import async_timed
-from fetch import fetch_status_w_delay
+from extract import fetch_status_w_delay
 
 @async_timed()
 async def main():

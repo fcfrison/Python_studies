@@ -3,7 +3,7 @@ import pandas as pd
 import logging
 from aiohttp import ClientSession
 from aiohttp import TCPConnector
-from fetch import fetch_status_altered
+from extract import fetch_status_altered
 from util import async_timed
 
 
