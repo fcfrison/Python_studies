@@ -9,9 +9,19 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
     '''
+    Description
+    ---------------------------
     This function creates a table that contains a column with the 
     field 'perc_56_19', that represents the resulting 'vl_rubrica' 
     considering the division between 'id_rubrica'=56 and 'id_rubrica'=19.
+
+    Parameters
+    ---------------------------
+        df: pd.DataFrame
+
+    Output
+    ---------------------------
+        df_DIPR_grouped_final pd.DataFrame
     '''
     df_DIPR_copy = df.copy()
     cnpj_iterator = df_DIPR_copy.nr_cnpj_entidade.unique()
@@ -26,6 +36,7 @@ def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
         df_DIPR_grouped_query = df_DIPR_grouped.query(
                             f"nr_cnpj_entidade == '{cnpj}' & " +
                             "(id_rubrica=='56' | id_rubrica=='19')")
+        
         # making two new columns considering the values of 'id_rubrica'
         df_DIPR_grouped_query = pd.pivot_table(df_DIPR_grouped_query, 
                             index=['nr_cnpj_entidade','dt_mes', 'dt_ano'],
@@ -33,6 +44,7 @@ def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
                                 .reset_index()
         df_DIPR_grouped_query.rename(columns={'19':"rubrica_19", 
                         '56':"rubrica_56"},inplace=True)
+        
         # dividing one column by another
         df_DIPR_grouped_query['perc_56_19'] = df_DIPR_grouped_query['rubrica_56']\
             .div(df_DIPR_grouped_query['rubrica_19'].values)
@@ -48,7 +60,9 @@ def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
 
 def find_time_interval(df_aliquotas:pd.DataFrame,nm_tuple:namedtuple)->pd.Series:
     '''
-    This function finds the intervals which a specific 'date' belongs to. 
+    Description
+    ---------------------------
+    This function finds the interval by which a specific 'date' belongs to. 
     The 'dates' field comes from the table 'df_DIPR_grouped' and is related
     to a transaction date.
     
@@ -67,9 +81,22 @@ def find_time_interval(df_aliquotas:pd.DataFrame,nm_tuple:namedtuple)->pd.Series
             nm_tuple.dates<arg.dt_final_esperada) \
                 else False, axis=1)
 
+
 def get_aliquotas(df_aliquotas:pd.DataFrame,
                   df_DIPR_grouped:pd.DataFrame,
                   cnpj:str)->None:
+    '''
+    Description
+    ---------------------------
+    This function finds the correct "aliquota" given a specific 'cnpj', a month
+    and a year. It inserts some columns in the 'df_DIPR_grouped' Dataframe.
+
+    Parameters 
+    ---------------------------
+    df_aliquotas:pd.DataFrame,
+    df_DIPR_grouped:pd.DataFrame,
+    cnpj:str
+    '''
     
     aliquotas_columns = ['vl_aliquota','datas_invertidas','dt_inicio_vigencia_duplicada',
                          'dts_finais_diferentes'] # list of columns of interest   
@@ -103,6 +130,7 @@ def get_aliquotas(df_aliquotas:pd.DataFrame,
             else: # for now, do nothing...
                 pass
 
+
 def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
                           df_aliquotas:pd.DataFrame)->pd.DataFrame:
     '''
@@ -135,6 +163,7 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
     fn = lambda arg: pd.to_datetime(pd.Period(f'{arg.dt_mes}-1-{arg.dt_ano}',freq='M')\
         .end_time.date()) # get the last day of the month
     list_dates = list(map(fn,df_DIPR_grouped.itertuples()))
+    
     # create column 'dates'
     df_DIPR_grouped = df_DIPR_grouped.assign(dates=list_dates)
 
@@ -153,6 +182,7 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
     conditions = [df_DIPR_grouped.perc_56_19 >= df_DIPR_grouped.montante_aliquotas, 
                 df_DIPR_grouped.perc_56_19 < df_DIPR_grouped.montante_aliquotas] 
     choices = [False,True]
+    
     # creating new column with compared values
     df_DIPR_grouped['irregularidade'] = np.select(conditions,choices)
     return df_DIPR_grouped
@@ -160,3 +190,4 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
 if(__name__=='__main__'):
     df_DIPR:pd.DataFrame = pd.read_pickle('./downloaded_data/DIPR_2021.pkl')
     df_aliquotas:pd.DataFrame = pd.read_pickle('./downloaded_data/df_aliquota_transformed.pkl')
+    rpps_aliquota_vs_dipr(df_DIPR,df_aliquotas)

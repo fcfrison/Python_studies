@@ -22,7 +22,7 @@ def generate_control_data(cnpj:str, year:int, month:int)->List[dict]:
                 for month_ in range(1,month + 1)]
 
 def verify_uploaded_data(df_dipr: pd.DataFrame,
-                      df_aliquota:pd.DataFrame)->None:
+                      df_aliquota:pd.DataFrame)->pd.DataFrame:
     '''
     This function purpose is to verify whether a munipacility
     that has a RPPS related to it has uploaded or not the RPPS 
@@ -61,7 +61,8 @@ def verify_uploaded_data(df_dipr: pd.DataFrame,
     fn = lambda arg: False if(arg=='both') else True
     df_data_control._merge = df_data_control._merge.apply(fn)
     df_data_control.rename(columns={'_merge':'nao_enviou'},inplace=True)
-    df_data_control.to_excel('./downloaded_data/controle_envios.xlsx')
+    return df_data_control
+    #df_data_control.to_excel('./downloaded_data/controle_envios.xlsx')
 
 if(__name__=='__main__'):
     df_DIPR:pd.DataFrame = pd.read_pickle('./downloaded_data/DIPR_2021.pkl')

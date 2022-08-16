@@ -6,8 +6,7 @@ from aiohttp import ClientSession
 from aiohttp import TCPConnector
 
 from extract import *
-from transform.transform_rpps_aliquotas import aliquotas_rpps_transform
-from transform.verify_uploaded_data import verify_uploaded_data
+from transform import *
 from util import async_timed
 
 #start_time = datetime.now().strftime('%d_%m_%Y_%H_%M_%S')
@@ -31,11 +30,13 @@ async def main():
                                                 EndpointRppsAliquota)
         df_aliquota_transformed = aliquotas_rpps_transform(df_aliquota)
         
-        verify_uploaded_data(df_DIPR,df_aliquota)
+        df_control = verify_uploaded_data(df_DIPR,df_aliquota)
 
-        #df_DIPR.to_pickle('./downloaded_data/DIPR_2021.pkl')
-        #df_aliquota_transformed.to_pickle('./downloaded_data/df_aliquota_transformed.pkl')
-        #df_aliquota.to_excel('./downloaded_data/df_aliquotas_new_1.xlsx')
+        df_comparation = rpps_aliquota_vs_dipr(df_DIPR,df_aliquota_transformed)
+
+        df_aliquota_transformed.to_excel('./downloaded_data/aliquotas_transformadas.xlsx')
+        df_control.to_excel('./downloaded_data/df_controle.xlsx')
+        df_comparation.to_excel('./downloaded_data/df_comparacao.xlsx')
         print("FIM DO PROCESSAMENTO")
     
 
