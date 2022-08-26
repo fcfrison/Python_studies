@@ -1,0 +1,1 @@
+CONFIG_FILE_LOCATION = r'C:\location\to\the\config_file\config_sqlalchemy_.json'
