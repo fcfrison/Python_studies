@@ -9,6 +9,9 @@ import itertools
 import datetime
 import pandas as pd
 import numpy as np
+# suppress FutureWarning
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def normalize_date(date:str)->datetime.datetime:
     '''
@@ -91,10 +94,10 @@ def insert_expected_final_ente(df:pd.DataFrame,
                     for i,item in enumerate(sub_list):
                         if(item.dt_inicio_vigencia!=
                             nm_tuple.dt_inicio_vigencia):
-                            df['dt_final_esperada'].loc[nm_tuple.Index] =  \
-                                    item.dt_inicio_vigencia - \
-                                    datetime.timedelta(seconds = 1) # the end of the day before
-                            break
+                                df['dt_final_esperada'].loc[nm_tuple.Index] =  \
+                                        item.dt_inicio_vigencia - \
+                                        datetime.timedelta(seconds = 1) # the end of the day before
+                                break
                         if(len(sub_list)==i+1):
                             raise IndexError
                 except IndexError:

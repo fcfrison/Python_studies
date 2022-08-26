@@ -154,7 +154,7 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
         df_DIPR_grouped: pd.DataFrame
     '''
     # despite the fact that'vl_rubrica' is a monetary value, it'll be treated as float.
-    df_DIPR = df_DIPR.astype(dict(vl_rubrica='float128',
+    df_DIPR = df_DIPR.astype(dict(vl_rubrica='float',
                                 id_rubrica='str'))
     # creating a table with a new field
     df_DIPR_grouped = create_table_percent(df=df_DIPR)

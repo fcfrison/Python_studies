@@ -78,7 +78,7 @@ class EndpointDIPR(EndpointBase):
     Class related to the endpoint DIPR.
     '''
     nr_cnpj_entidade:str
-    dt_ano:int = datetime.now().year -1
+    dt_ano:int = datetime.now().year 
     endpoint:ClassVar[str] = 'DIPR'
 
 

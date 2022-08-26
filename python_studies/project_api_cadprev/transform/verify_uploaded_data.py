@@ -2,6 +2,10 @@ import itertools
 from typing import List
 import pandas as pd
 
+# suppress FutureWarning
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 def generate_control_data(cnpj:str, year:int, month:int)->List[dict]:
     """
     This function purpose is to generate a list of dictionary. 
