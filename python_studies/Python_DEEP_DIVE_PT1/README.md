@@ -1,4 +1,4 @@
-# Sql Alchemy small development
+## Python Deep Dive part 1
 
 ## 📜 Description
 The subdirectories of Python_DEEP_DIVE_PT1 contain files related to a series of 
