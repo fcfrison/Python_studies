@@ -1,6 +1,6 @@
 # Sql Alchemy small development
 
-📜 Description
+## 📜 Description
 This is a small project whose purpose is to better understand the Python library 
 SqlAlchemy and its functionalities. 
 
