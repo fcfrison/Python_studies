@@ -6,8 +6,9 @@ from sqlalchemy import ForeignKey, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy.orm import relationship, backref # these methods are related to the creation of relationships
+from db import db_conn
 
-Base = declarative_base() # All classes inherit from the declarative base
+Base = declarative_base() # All classes below inherit from the declarative base
 
 class Cookie(Base):
     __tablename__ = 'cookies'
@@ -17,6 +18,12 @@ class Cookie(Base):
     cookie_sku = Column(String(55))
     quantity = Column(Integer())
     unit_cost = Column(Numeric(12, 2))
+    def __repr__(self):
+        return "Cookie(cookie_name='{self.cookie_name}', " \
+                "cookie_recipe_url='{self.cookie_recipe_url}', " \
+                "cookie_sku='{self.cookie_sku}', " \
+                "quantity={self.quantity}, " \
+                "unit_cost={self.unit_cost})".format(self=self)
 
 class User(Base):
     __tablename__ = 'users'
@@ -27,6 +34,11 @@ class User(Base):
     password = Column(String(25), nullable=False)
     created_on = Column(DateTime(), default=datetime.now)
     updated_on = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
+    def __repr__(self):
+        return "User(username='{self.username}', " \
+                "email_address='{self.email_address}', " \
+                "phone='{self.phone}', " \
+                "password='{self.password}')".format(self=self)
 
 class Order(Base):
     __tablename__ = 'orders'
@@ -34,4 +46,25 @@ class Order(Base):
     user_id = Column(Integer(), ForeignKey('users.user_id'))
     shipped = Column(Boolean(), default=False)
     user = relationship("User", 
-            backref=backref('orders', order_by=order_id))
+            backref=backref('orders', order_by=order_id)) # here, we're establishing a one-to-many relationship
+
+class LineItem(Base):
+    __tablename__ = 'line_items'
+    line_item_id = Column(Integer(), Identity(start=1), primary_key=True)
+    order_id = Column(Integer(), ForeignKey('orders.order_id'))
+    cookie_id = Column(Integer(), ForeignKey('cookies.cookie_id'))
+    quantity = Column(Integer())
+    extended_cost = Column(Numeric(12, 2))
+    order = relationship("Order", backref=backref('line_items',
+            order_by=line_item_id))
+    cookie = relationship("Cookie", uselist=False) # Creating a one-to-one relationship.
+    def __repr__(self):
+        return "LineItems(order_id={self.order_id}, " \
+                "cookie_id={self.cookie_id}, " \
+                "quantity={self.quantity}, " \
+                "extended_cost={self.extended_cost})".format(
+                self=self)
+
+
+
+Base.metadata.create_all(db_conn.engine) # Here, we are creating the tables on db.  
