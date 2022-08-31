@@ -1,11 +1,68 @@
 from collections import namedtuple
 from decimal import Decimal
+from typing import List
 import numpy as np
 import pandas as pd
 
 # suppress FutureWarning
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+
+def generate_idrubrica_query(list_rubricas:List[int])->str:
+    '''
+    Description
+    ---------------------------
+    This function takes as input a list of 'rubricas' and returns a 
+    formated string whose purpose is to select 'rubricas'. 
+
+    Parameters
+    ---------------------------
+        list_rubricas
+            A list of integers. Each integer represents a 'rubrica'. 
+    
+    Returns
+    ---------------------------
+        string_query
+            A formated string. 
+
+    Example
+    ---------------------------
+        If 'list_rubricas' = [1,2], then 'string_query' = "id_rubrica==1|id_rubrica==2".
+    '''
+    fn = lambda arg:"id_rubrica=='{arg_}'".format(arg_=arg)
+    selected_rubricas = tuple(map(fn,list_rubricas))
+    string_query = "|".join(selected_rubricas)
+    return string_query
+
+def rename_columns_dict_generator(list_rubricas:List[int]):
+    '''
+    Description
+    ---------------------------
+    This function takes as input a list of integers (values of 'rubricas')
+    and returns a dictionary for renaming columns purpose.
+
+    Parameters
+    ---------------------------
+        list_rubricas
+            A list of integers in which each integer represents a 'rubrica'.
+    
+    Returns
+    ---------------------------
+        select_rub_dict
+            A dictionary whose key a 'rubrica' code and the value is the intended
+            name for a column. 
+    
+    Example
+    ---------------------------
+        If list_rubricas = [1,2], then 
+        select_rub_dict = {"1":"rubrica_1", "2":"rubrica_2}.
+    '''
+    fn = lambda arg: f'rubrica_{arg}'
+    list_rubricas_transformed = list(map(fn,list_rubricas))
+    select_rub_dict = {}
+    for key, value in zip(list_rubricas,list_rubricas_transformed):
+        select_rub_dict[f'{key}']=value
+    return select_rub_dict
 
 def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
     '''
@@ -30,25 +87,29 @@ def create_table_percent(df:pd.DataFrame)->pd.DataFrame:
                         'dt_ano','id_rubrica'], as_index=False).sum()[
                             ['nr_cnpj_entidade','dt_mes','dt_ano',
                             'id_rubrica','vl_rubrica']]
+    selected_rubricas=[1,2,19,20,21,22,23,24,25,26,33,34,56,57,58,59,60,61,62,63]
+    string_query = generate_idrubrica_query(selected_rubricas)
+    dict_rename = rename_columns_dict_generator(selected_rubricas)
+    
+
     df_DIPR_grouped_final = pd.DataFrame()
     for cnpj in cnpj_iterator:
-        # selecting id_rubrica=='56' | id_rubrica=='19' given a cnpj
+        # selecting differente id_rubricas given a cnpj
         df_DIPR_grouped_query = df_DIPR_grouped.query(
                             f"nr_cnpj_entidade == '{cnpj}' & " +
-                            "(id_rubrica=='56' | id_rubrica=='19')")
+                            f"({string_query})")
         
         # making two new columns considering the values of 'id_rubrica'
         df_DIPR_grouped_query = pd.pivot_table(df_DIPR_grouped_query, 
                             index=['nr_cnpj_entidade','dt_mes', 'dt_ano'],
                             columns=['id_rubrica'], values='vl_rubrica')\
                                 .reset_index()
-        df_DIPR_grouped_query.rename(columns={'19':"rubrica_19", 
-                        '56':"rubrica_56"},inplace=True)
-        
+        df_DIPR_grouped_query.rename(columns=dict_rename,inplace=True)
+        '''
         # dividing one column by another
         df_DIPR_grouped_query['perc_56_19'] = df_DIPR_grouped_query['rubrica_56']\
             .div(df_DIPR_grouped_query['rubrica_19'].values)
-
+        '''
         if(df_DIPR_grouped_final.empty):
             df_DIPR_grouped_final = df_DIPR_grouped_query
         else:
@@ -176,18 +237,11 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
         df_DIPR_grouped[['aliquota_ente','aliquota_suplem']]\
             .sum(axis=1)
 
-    df_DIPR_grouped.perc_56_19 = (df_DIPR_grouped.perc_56_19 * 100).round(2)
-
-    # comparing two columns
-    conditions = [df_DIPR_grouped.perc_56_19 >= df_DIPR_grouped.montante_aliquotas, 
-                df_DIPR_grouped.perc_56_19 < df_DIPR_grouped.montante_aliquotas] 
-    choices = [False,True]
-    
-    # creating new column with compared values
-    df_DIPR_grouped['irregularidade'] = np.select(conditions,choices)
     return df_DIPR_grouped
 
 if(__name__=='__main__'):
-    df_DIPR:pd.DataFrame = pd.read_pickle('./downloaded_data/DIPR_2021.pkl')
-    df_aliquotas:pd.DataFrame = pd.read_pickle('./downloaded_data/df_aliquota_transformed.pkl')
+    dipr_file_add = './data/DIPR_2021.pkl'
+    aliq_transf = './data/df_aliquota_transformed.pkl'
+    df_DIPR:pd.DataFrame = pd.read_pickle(dipr_file_add)
+    df_aliquotas:pd.DataFrame = pd.read_pickle(aliq_transf)
     rpps_aliquota_vs_dipr(df_DIPR,df_aliquotas)
