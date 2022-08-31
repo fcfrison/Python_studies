@@ -51,14 +51,19 @@ def insert_expected_final_ente(df:pd.DataFrame,
     'datas_invertidas'. The former contains data related to 
     the expected date given the field 'dt_inicio_vigencia' and
     the latter refers to the situation in which 
-    'dt_inicio_vigencia'>'dt_fim_vigencia'.
-    It only applies to "no_sujeito_passivo =='Ente'".
+    'dt_inicio_vigencia'>'dt_fim_vigencia'".
 
-    parameters
+    Parameters
     ----------------
-        df:pd.DataFrame, 
-        now:datetime.datetime,
-        nr_cnpj_entidade:str
+        df
+            DataFrame with data from the endpoint RPPS_ALIQUOTAS;
+        now
+            The date of data processing;
+        nr_cnpj_entidade
+            nr_cnpj_entidade is a string that identifies one municipality;
+        no_sujeito_passivo
+            no_sujeito_passivo is a category related to the kind of investiment;
+
     '''
     # Insert new columns.
     try:
@@ -68,17 +73,20 @@ def insert_expected_final_ente(df:pd.DataFrame,
     except ValueError:
         pass
     
-    # Query data from 'Ente'
-    iterator = df.query(f"nr_cnpj_entidade == '{nr_cnpj_entidade}'" +
-                        f"& no_sujeito_passivo =='{no_sujeito_passivo}'")\
-                        [['dt_inicio_vigencia','dt_fim_vigencia','nr_cnpj_entidade']]\
-                        .sort_values(ascending=True, by='dt_inicio_vigencia')
+    # Query data from 'Ente' or 'Ente-suplementar'.
+    query_str = f"nr_cnpj_entidade == '{nr_cnpj_entidade}'" +\
+        f" & no_sujeito_passivo =='{no_sujeito_passivo}'"
+    selected_columns = ['dt_inicio_vigencia','dt_fim_vigencia','nr_cnpj_entidade']
+    iterator = df.query(query_str)[selected_columns]\
+        .sort_values(ascending=True, by='dt_inicio_vigencia')
 
     list_iter = list(iterator.itertuples()) # create iterator with namedtuple
     for index, nm_tuple in enumerate(list_iter):
         if(nm_tuple.dt_inicio_vigencia>nm_tuple.dt_fim_vigencia): # dates are inverted
-                df['datas_invertidas'].loc[nm_tuple.Index] = True
-        
+            df['datas_invertidas'].loc[nm_tuple.Index] = True
+            continue
+        else: df['datas_invertidas'].loc[nm_tuple.Index] = False
+
         if(index==len(list_iter)-1 and nm_tuple.dt_inicio_vigencia<=now):# last element in the list
             df['dt_final_esperada'].loc[nm_tuple.Index] = now
         
@@ -152,9 +160,9 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
     This function applies various transformations to the data downloaded
     from the endpoint ''
     '''
-    df_aliquota = df_aliquota[ # filtering the fields of interest
-                    ['nr_cnpj_entidade', 'no_ente','vl_aliquota',
-                    'no_sujeito_passivo','dt_inicio_vigencia', 'dt_fim_vigencia']]   
+    selected_columns = ['nr_cnpj_entidade', 'no_ente','vl_aliquota',
+                    'no_sujeito_passivo','dt_inicio_vigencia', 'dt_fim_vigencia']
+    df_aliquota = df_aliquota[selected_columns] # filtering the fields of interest                
 
     df_aliquota.query("no_sujeito_passivo == 'Ente' | " +
                     "no_sujeito_passivo == 'Ente-suplementar' ",
@@ -182,8 +190,7 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
     
     # creating lists of objects of the class CnpjNomeSujPass.
     cnpj_nome_suj = [list(map(lambda arg: CnpjNomeSujPass(arg,nome_suj),
-                        unique_cnpj))
-                for nome_suj in ['Ente','Ente-suplementar']]
+                    unique_cnpj)) for nome_suj in ['Ente','Ente-suplementar']]
     
     # unpacking two lists into another.
     cnpj_nome_suj_unpack = list(itertools.chain(*cnpj_nome_suj))
@@ -216,4 +223,6 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
     return df_aliquota
 
 if(__name__=="__main__"):
-    df_aliquota:pd.DataFrame = pd.read_pickle('./downloaded_data/df_aliquotas.pkl')
+    data_file_address = './data/df_aliquotas.pkl'
+    df_aliquota:pd.DataFrame = pd.read_pickle(data_file_address)
+    aliquotas_rpps_transform(df_aliquota)
