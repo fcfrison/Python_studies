@@ -158,13 +158,10 @@ def get_aliquotas(df_aliquotas:pd.DataFrame,
     df_DIPR_grouped:pd.DataFrame,
     cnpj:str
     '''
-    
-    aliquotas_columns = ['vl_aliquota','datas_invertidas','dt_inicio_vigencia_duplicada',
+    aliquotas_columns = ['vl_aliquota','dt_inicio_vigencia_duplicada',
                          'dts_finais_diferentes'] # list of columns of interest   
-    new_columns_ente =  ['aliquota_ente','datas_invertidas_ente','dt_duplicada_ente',
-                        'problema_dt_final_ente'] # list of new columns
-    new_columns_ente_suplem =  ['aliquota_suplem','datas_invertidas_suplem',
-                                'dt_duplicada_suplem','problema_dt_final_suplem'] # list of new columns
+    new_columns_ente =  ['aliquota_ente','dt_duplicada_ente','problema_dt_final_ente'] # list of new columns
+    new_columns_ente_suplem =  ['aliquota_suplem','dt_duplicada_suplem','problema_dt_final_suplem'] # list of new columns
 
     dipr_iter = list(df_DIPR_grouped.query( # list of items in DIPR, given a cnpj
                     f"nr_cnpj_entidade == '{cnpj}'").itertuples())
@@ -215,6 +212,8 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
         df_DIPR_grouped: pd.DataFrame
     '''
     # despite the fact that'vl_rubrica' is a monetary value, it'll be treated as float.
+    df_aliquotas = df_aliquotas.query("datas_invertidas != True")
+    df_aliquotas.reset_index(inplace=True)
     df_DIPR = df_DIPR.astype(dict(vl_rubrica='float',
                                 id_rubrica='str'))
     # creating a table with a new field
@@ -241,7 +240,7 @@ def rpps_aliquota_vs_dipr(df_DIPR:pd.DataFrame,
 
 if(__name__=='__main__'):
     dipr_file_add = './data/DIPR_2021.pkl'
-    aliq_transf = './data/df_aliquota_transformed.pkl'
+    aliq_transf = './data/df_aliquota_transformed_new.pkl'
     df_DIPR:pd.DataFrame = pd.read_pickle(dipr_file_add)
     df_aliquotas:pd.DataFrame = pd.read_pickle(aliq_transf)
     rpps_aliquota_vs_dipr(df_DIPR,df_aliquotas)
