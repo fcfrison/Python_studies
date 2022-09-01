@@ -3,8 +3,8 @@
 ## 📜 Description
 This small project is the result of the course [Writing production ready ETL pipelines in Python Pandas](https://www.udemy.com/course/writing-production-ready-etl-pipelines-in-python-pandas/).
 The application developed here is an ETL that connects to a AWS server, extract 
-data from a S3 bucket named 'xetra-1234', the transform it through following some 
-rules and finally load the transformed data again in a AWS server. 
+data from a S3 bucket named 'xetra-1234', then transform it (following some predetermined
+rules) and finally load the transformed data again in a AWS server. 
 
 There were no concerns related to testing, log control, exception handling or any 
 sort of procedure that is highly recommended when deploying an application. The goal
