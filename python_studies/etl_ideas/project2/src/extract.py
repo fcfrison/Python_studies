@@ -28,8 +28,8 @@ def csv_to_df(bucket:ServiceResource,date_format:str,
               day_before:datetime, decoding:str='utf-8', 
               delimiter:str=',')->pd.DataFrame:
     '''
-    Function that downloads all csv files in a specific AWS S3 bucket and transform
-    it to a Pandas DataFrame. All csv files that were created after the 'day before' 
+    Function that downloads all 'csv' files in a specific AWS S3 bucket and transform
+    it to a Pandas DataFrame. All 'csv' files that were created after the 'day before' 
     will be downloaded.
 
     Parameters
@@ -62,7 +62,7 @@ def csv_to_df(bucket:ServiceResource,date_format:str,
 
 def extract(start_date:str, bucket_name:str, resource:str)->pd.DataFrame:
     '''
-    Quick and dirty solution to extract data from a AWS S3 bucket.
+    Quick and dirty solution to extract data from an AWS S3 bucket.
     '''
     date_format = '%Y-%m-%d'
     day_before =  datetime.strptime(start_date,date_format).date()\

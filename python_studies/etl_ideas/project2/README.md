@@ -8,9 +8,9 @@ rules) and finally load the transformed data again in a AWS server.
 
 There were no concerns related to testing, log control, exception handling or any 
 sort of procedure that is highly recommended when deploying an application. The goal
-of this project was to understand and develop the fundamentals on ETL development.
+of this project is to understand and develop the fundamentals of ETL development.
 
-The difference between `etl/project1` and `etl/project2` is that `project2` is a refactoring of the code presented on `project1`. In `project2` my intention was to encapsulate better the functions, making the whole code more readable. I could, instead of creating a new directory, just have started a new branch in `Git`, but for the sake of clarity, i decided to create an exclusive directory.
+The difference between `etl/project1` and `etl/project2` is that `project2` is a refactoring of the code presented on `project1`. In `project2` my intention is to encapsulate better the functions, making the whole code more readable. I could, instead of creating a new directory, just have started a new branch in `Git`, but for the sake of clarity, i decided to create an exclusive directory.
 
 ## 📈 File structure and description
 
