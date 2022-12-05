@@ -1,3 +1,4 @@
+from typing import List
 import pandas as pd
 import numpy as np
 
@@ -154,6 +155,37 @@ def check_dt_differences(df:pd.DataFrame,
                 
                 df['dts_finais_diferentes'].loc[nm_tuple.Index]="DFD"
 
+def normalizing_dates(df:pd.DataFrame,column_name:str)->pd.DataFrame:
+    '''
+    Description
+    ----------------
+    This function normalizes dates from a given column.
+
+    Parameters
+    ----------------
+        df: a Pandas DataFrame;
+        column_name: the name of the column to be normalized;
+    
+    Returns
+    ----------------
+        df: the transformed Pandas DataFrame;
+    '''
+    df[column_name] = df[column_name].map(normalize_date)
+    return df
+
+def create_cnpj_list(df:pd.DataFrame)->List[object]:
+    unique_cnpj:np.ndarray = df_aliquota.nr_cnpj_entidade\
+                                .unique() 
+    # creating a class with 'nr_cnpj_entidade' and 'no_sujeito_passivo' attributes.
+    CnpjNomeSujPass = namedtuple('CnpjNomeSujPass', 
+                            'nr_cnpj_entidade  no_sujeito_passivo')
+        
+    # creating lists of objects of the class CnpjNomeSujPass.
+    cnpj_nome_suj = [list(map(lambda arg: CnpjNomeSujPass(arg,nome_suj),
+                        unique_cnpj)) for nome_suj in ['Ente','Ente-suplementar']]
+    cnpj_nome_suj_unpack = list(itertools.chain(*cnpj_nome_suj))
+    return cnpj_nome_suj_unpack
+
 def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
                             now = datetime.datetime.now()):
     '''
@@ -170,17 +202,15 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
     df_aliquota.reset_index(inplace=True, drop=True)
     df_aliquota.vl_aliquota = df_aliquota.vl_aliquota\
                             .map(lambda arg: Decimal(arg)) # turning 'vl_aliquota' into Decimal
-    # normalizing dates
-    df_aliquota.dt_inicio_vigencia = df_aliquota.dt_inicio_vigencia\
-                                        .map(normalize_date)
-    df_aliquota.dt_fim_vigencia = df_aliquota.dt_fim_vigencia\
-                                        .map(normalize_date)
-
+    # normalizing dates   
+    df_aliquota = normalizing_dates(df_aliquota,'dt_inicio_vigencia')
+    df_aliquota = normalizing_dates(df_aliquota,'dt_fim_vigencia')
+    
     # droping na values from the field  'dt_inicio_vigencia'
     df_aliquota.dropna(axis=0,how='any',
                         subset='dt_inicio_vigencia',
                         inplace=True)
-
+    '''
     unique_cnpj:np.ndarray = df_aliquota.nr_cnpj_entidade\
                                 .unique() 
 
@@ -194,7 +224,9 @@ def aliquotas_rpps_transform(df_aliquota:pd.DataFrame,
     
     # unpacking two lists into another.
     cnpj_nome_suj_unpack = list(itertools.chain(*cnpj_nome_suj))
+    '''
 
+    cnpj_nome_suj_unpack = create_cnpj_list(df_aliquota)
     # inserting columns
     fn = lambda arg: insert_expected_final_ente(
                         df=df_aliquota,
